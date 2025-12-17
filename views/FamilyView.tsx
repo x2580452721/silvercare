@@ -4,22 +4,40 @@ import { MOCK_VITALS_BP, MOCK_VITALS_HEART, MOCK_ALERTS } from '../types';
 import HealthScoreGauge from '../components/HealthScoreGauge';
 import { MapPin, Phone, MessageCircle, AlertTriangle, Battery, Signal, Activity, Bell, ChevronRight, Info, AlertCircle, Navigation, Check, X, ShieldCheck, Bot, Video, Mic, Camera, Maximize2, Minimize2, MoreVertical, Wifi, Layers } from 'lucide-react';
 
-// Move outside to prevent re-render issues
-const VectorMapOverlay = () => (
-    <div className="absolute inset-0 pointer-events-none">
-      {/* Grid Pattern overlay for tech feel */}
-      <svg className="absolute inset-0 w-full h-full opacity-10" width="100%" height="100%">
+// Reliable pure CSS/SVG Map Background - No external images to fail
+const MockMapBackground = () => (
+    <div className="absolute inset-0 bg-[#f3f4f6] overflow-hidden">
+      {/* Base Grid */}
+      <svg className="absolute inset-0 w-full h-full" width="100%" height="100%">
         <defs>
-            <pattern id="grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#000" strokeWidth="0.5"/>
+            <pattern id="grid" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+               <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#e5e7eb" strokeWidth="1"/>
             </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#grid)" />
       </svg>
       
-      {/* Safe Zone Radar Ripple */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full border border-green-500/30 bg-green-500/5 animate-pulse-slow"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full border border-dashed border-green-500/20"></div>
+      {/* Vector Roads & Blocks */}
+      <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 400 800">
+         {/* Roads */}
+         <path d="M 80 0 L 80 800" stroke="white" strokeWidth="25" fill="none" />
+         <path d="M 320 0 L 320 800" stroke="white" strokeWidth="25" fill="none" />
+         <path d="M 0 250 L 400 250" stroke="white" strokeWidth="25" fill="none" />
+         <path d="M 0 550 L 400 550" stroke="white" strokeWidth="25" fill="none" />
+         
+         {/* Buildings (Abstract) */}
+         <rect x="100" y="50" width="80" height="150" fill="#dbeafe" rx="4" />
+         <rect x="200" y="80" width="100" height="120" fill="#e0e7ff" rx="4" />
+         
+         {/* Current User Building */}
+         <rect x="110" y="280" width="180" height="120" fill="#d1fae5" rx="4" stroke="#34d399" strokeWidth="2" />
+         
+         <rect x="220" y="600" width="120" height="100" fill="#f3f4f6" rx="4" />
+         <rect x="20" y="600" width="150" height="150" fill="#e5e7eb" rx="4" />
+      </svg>
+
+      {/* Radar Effect at Location */}
+      <div className="absolute top-[38%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-blue-500/20 bg-blue-500/5 animate-pulse-slow pointer-events-none"></div>
     </div>
 );
 
@@ -307,22 +325,11 @@ const FamilyView: React.FC = () => {
   );
 
   const renderMap = () => (
-    <div className="absolute inset-0 bg-gray-100 overflow-hidden flex flex-col">
-        {/* Real-style Map Background */}
-        <div className="absolute inset-0 z-0">
-             {/* Fallback pattern if image fails, plus image on top */}
-             <div className="absolute inset-0 bg-gray-200 opacity-50"></div>
-             <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Neighborhood_Map.png" 
-                className="w-full h-full object-cover opacity-60 grayscale contrast-125"
-                alt="Map Background"
-             />
-             {/* Vector Overlay for Tech feel */}
-             <VectorMapOverlay />
-        </div>
+    <div className="w-full h-full relative bg-gray-100 overflow-hidden flex flex-col">
+        {/* Safe Map Background */}
+        <MockMapBackground />
         
-        {/* Live Video Feed Overlay - FIXED Position for Fullscreen Mode */}
-        {/* z-index must be very high (110) to cover the bottom nav (z-90) */}
+        {/* Live Video Feed Overlay */}
         <div 
           onClick={!isCamExpanded ? toggleExpand : undefined}
           className={`transition-all duration-500 ease-in-out shadow-2xl bg-black overflow-hidden flex flex-col
@@ -407,7 +414,7 @@ const FamilyView: React.FC = () => {
                </div>
             </div>
 
-            {/* Minimized Label - Simplified */}
+            {/* Minimized Label */}
             {!isCamExpanded && (
                 <div className="h-0 group-hover:h-auto transition-all overflow-hidden bg-black/80 px-2 py-1 absolute bottom-0 left-0 right-0 backdrop-blur">
                     <div className="flex items-center gap-1 text-[10px] text-green-400">
@@ -442,7 +449,7 @@ const FamilyView: React.FC = () => {
             </div>
 
             {/* Marker & Safe Zone */}
-            <div className="z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+            <div className="z-10 absolute top-[38%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                 {/* Info Box */}
                 <div className="bg-white/95 backdrop-blur p-2 rounded-lg shadow-xl mb-3 animate-bounce flex items-center gap-2 border border-blue-100">
                     <Bot className="w-4 h-4 text-blue-500" />
@@ -501,9 +508,12 @@ const FamilyView: React.FC = () => {
         </header>
       )}
 
-      <div className="flex-1 overflow-auto relative bg-gray-50">
+      {/* Main Content Area */}
+      {/* We use flex-1 and overflow-auto generally, but for map we want to handle scroll differently or not at all */}
+      <div className={`flex-1 relative bg-gray-50 ${activeTab === 'map' ? 'overflow-hidden flex flex-col' : 'overflow-auto block'}`}>
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'alerts' && renderAlerts()}
+        {/* Map needs to take full height of the flex container */}
         {activeTab === 'map' && renderMap()}
       </div>
 
